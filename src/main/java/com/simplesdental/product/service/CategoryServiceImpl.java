@@ -3,6 +3,8 @@ package com.simplesdental.product.service;
 import com.simplesdental.product.model.Category;
 import com.simplesdental.product.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,6 +29,9 @@ public class CategoryServiceImpl implements CategoryService {
     public List<Category> findAllWithProducts() {
         return categoryRepository.findAllWithProducts();
     }
+
+    @Override
+    public Page<Category> findAllWithProducts(Pageable pageable) { return categoryRepository.findAllWithProducts(pageable); }
 
     @Override
     public Optional<Category> findById(Long id) {
