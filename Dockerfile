@@ -1,12 +1,17 @@
 FROM openjdk:17-slim as build
 WORKDIR /workspace/app
 
-COPY mvnw .
-COPY .mvn .mvn
+# Install Maven
+RUN apt-get update && apt-get install -y wget
+RUN wget https://archive.apache.org/dist/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz
+RUN tar -xzf apache-maven-3.9.6-bin.tar.gz
+RUN mv apache-maven-3.9.6 /opt/maven
+ENV PATH="/opt/maven/bin:${PATH}"
+
 COPY pom.xml .
 COPY src src
 
-RUN ./mvnw install -DskipTests
+RUN mvn install -DskipTests
 RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
 
 FROM openjdk:17-slim
