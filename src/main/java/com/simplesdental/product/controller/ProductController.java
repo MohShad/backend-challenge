@@ -24,27 +24,15 @@ public class ProductController {
     }
 
     @GetMapping
-    @Transactional
     public List<Product> getAllProducts() {
-        List<Product> products = productService.findAll();
-        products.forEach(product -> {
-            if (product.getCategory() != null) {
-                Hibernate.initialize(product.getCategory());
-            }
-        });
-        return products;
+        return productService.findAllWithCategory();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
-        return productService.findById(id)
-                .map(product -> {
-                    if (product.getCategory() != null) {
-                        Hibernate.initialize(product.getCategory());
-                    }
-                    return ResponseEntity.ok(product);
-                })
-                .orElse(ResponseEntity.notFound().build());
+        return productService.findByIdWithCategory(id)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping

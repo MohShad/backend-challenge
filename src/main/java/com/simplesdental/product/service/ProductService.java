@@ -1,36 +1,21 @@
 package com.simplesdental.product.service;
 
 import com.simplesdental.product.model.Product;
-import com.simplesdental.product.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-@Service
-public class ProductService {
+public interface ProductService {
 
-    private final ProductRepository productRepository;
+    List<Product> findAll();
 
-    @Autowired
-    public ProductService(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
+    List<Product> findAllWithCategory();
 
-    public List<Product> findAll() {
-        return productRepository.findAll();
-    }
+    Optional<Product> findById(Long id);
 
-    public Optional<Product> findById(Long id) {
-        return productRepository.findById(id);
-    }
+    Optional<Product> findByIdWithCategory(Long id);
 
-    public Product save(Product product) {
-        return productRepository.save(product);
-    }
+    Product save(Product product);
 
-    public void deleteById(Long id) {
-        productRepository.deleteById(id);
-    }
+    void deleteById(Long id);
 }
