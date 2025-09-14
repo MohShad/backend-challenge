@@ -24,9 +24,12 @@
                 <stackTrace/>
             </providers>
         </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/application.%d{yyyy-MM-dd}.json</fileNamePattern>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/application.%d{yyyy-MM-dd}.%i.json.gz</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
             <maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
         </rollingPolicy>
     </appender>
 
@@ -47,24 +50,45 @@
                 <stackTrace/>
             </providers>
         </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/error.%d{yyyy-MM-dd}.json</fileNamePattern>
-            <maxHistory>30</maxHistory>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/error.%d{yyyy-MM-dd}.%i.json.gz</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>90</maxHistory>
+            <totalSizeCap>500MB</totalSizeCap>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
         </rollingPolicy>
+    </appender>
+
+    <!-- Async Appender for JSON File -->
+    <appender name="ASYNC_JSON_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>1024</queueSize>
+        <discardingThreshold>20</discardingThreshold>
+        <maxFlushTime>5000</maxFlushTime>
+        <includeCallerData>false</includeCallerData>
+        <appender-ref ref="JSON_FILE"/>
+    </appender>
+
+    <!-- Async Appender for Error File -->
+    <appender name="ASYNC_ERROR_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>256</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <maxFlushTime>5000</maxFlushTime>
+        <includeCallerData>true</includeCallerData>
+        <appender-ref ref="ERROR_FILE"/>
     </appender>
 
     <!-- Root Logger -->
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="JSON_FILE"/>
-        <appender-ref ref="ERROR_FILE"/>
+        <appender-ref ref="ASYNC_JSON_FILE"/>
+        <appender-ref ref="ASYNC_ERROR_FILE"/>
     </root>
 
     <!-- Application Logger -->
     <logger name="com.simplesdental" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="JSON_FILE"/>
-        <appender-ref ref="ERROR_FILE"/>
+        <appender-ref ref="ASYNC_JSON_FILE"/>
+        <appender-ref ref="ASYNC_ERROR_FILE"/>
     </logger>
 
     <!-- Spring Framework -->
@@ -83,8 +107,13 @@
 
     <springProfile name="prod">
         <root level="WARN">
-            <appender-ref ref="JSON_FILE"/>
-            <appender-ref ref="ERROR_FILE"/>
+            <appender-ref ref="ASYNC_JSON_FILE"/>
+            <appender-ref ref="ASYNC_ERROR_FILE"/>
         </root>
+        <!-- Disable console logging in production -->
+        <logger name="com.simplesdental" level="INFO" additivity="false">
+            <appender-ref ref="ASYNC_JSON_FILE"/>
+            <appender-ref ref="ASYNC_ERROR_FILE"/>
+        </logger>
     </springProfile>
 </configuration>
