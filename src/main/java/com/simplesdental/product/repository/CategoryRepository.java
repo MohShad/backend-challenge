@@ -18,6 +18,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     @Query("SELECT c FROM Category c LEFT JOIN FETCH c.products")
     Page<Category> findAllWithProducts(Pageable pageable);
+
     @Query("SELECT c FROM Category c LEFT JOIN FETCH c.products WHERE c.id = :id")
     Optional<Category> findByIdWithProducts(Long id);
 }
