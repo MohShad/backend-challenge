@@ -59,7 +59,7 @@ public class ProductControllerV2 {
             @Parameter(description = "Campo para ordenação") @RequestParam(defaultValue = "id") String sortBy,
             @Parameter(description = "Direção da ordenação (asc/desc)") @RequestParam(defaultValue = "asc") String sortDir) {
 
-        logger.info("V2 - Fetching products - page: {}, size: {}, sortBy: {}, sortDir: {}", page, size, sortBy, sortDir);
+        logger.info("Product V2 - Fetching products - page: {}, size: {}, sortBy: {}, sortDir: {}", page, size, sortBy, sortDir);
 
         Sort sort = sortDir.equalsIgnoreCase("desc") ?
                 Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
@@ -69,7 +69,7 @@ public class ProductControllerV2 {
         Page<ProductResponseDTOV2> result = productService.findAllWithCategory(pageable)
                 .map(productMapper::toDTO);
 
-        logger.info("V2 - Found {} products in page {} of {}", result.getNumberOfElements(), result.getNumber(), result.getTotalPages());
+        logger.info("Product V2 - Found {} products in page {} of {}", result.getNumberOfElements(), result.getNumber(), result.getTotalPages());
         return result;
     }
 
@@ -92,15 +92,15 @@ public class ProductControllerV2 {
     })
     public ResponseEntity<ProductResponseDTOV2> getProductById(
             @Parameter(description = "ID do produto") @PathVariable Long id) {
-        logger.info("V2 - Fetching product by id: {}", id);
+        logger.info("Product V2 - Fetching product by id: {}", id);
 
         return productService.findByIdWithCategory(id)
                 .map(product -> {
-                    logger.info("V2 - Product found: {}", product.getName());
+                    logger.info("Product V2 - Product found: {}", product.getName());
                     return ResponseEntity.ok(productMapper.toDTO(product));
                 })
                 .orElseGet(() -> {
-                    logger.warn("V2 - Product not found with id: {}", id);
+                    logger.warn("Product V2 - Product not found with id: {}", id);
                     return ResponseEntity.notFound().build();
                 });
     }
@@ -124,7 +124,7 @@ public class ProductControllerV2 {
             )
     })
     public ProductResponseDTOV2 createProduct(@Valid @RequestBody ProductCreateRequestV2 request) {
-        logger.info("V2 - Creating new product: {}", request.getName());
+        logger.info("Product V2 - Creating new product: {}", request.getName());
 
         try {
             Product product = new Product();
@@ -136,10 +136,10 @@ public class ProductControllerV2 {
             product.setCategory(request.getCategory());
 
             Product savedProduct = productService.save(product);
-            logger.info("V2 - Product created successfully with id: {}", savedProduct.getId());
+            logger.info("Product V2 - Product created successfully with id: {}", savedProduct.getId());
             return productMapper.toDTO(savedProduct);
         } catch (Exception e) {
-            logger.error("V2 - Error creating product: {}", request.getName(), e);
+            logger.error("Product V2 - Error creating product: {}", request.getName(), e);
             throw e;
         }
     }
@@ -169,7 +169,7 @@ public class ProductControllerV2 {
     public ResponseEntity<ProductResponseDTOV2> updateProduct(
             @Parameter(description = "ID do produto") @PathVariable Long id,
             @Valid @RequestBody ProductCreateRequestV2 request) {
-        logger.info("V2 - Updating product with id: {}", id);
+        logger.info("Product V2 - Updating product with id: {}", id);
 
         return productService.findById(id)
                 .map(existingProduct -> {
@@ -181,11 +181,11 @@ public class ProductControllerV2 {
                     existingProduct.setCategory(request.getCategory());
 
                     Product updatedProduct = productService.save(existingProduct);
-                    logger.info("V2 - Product updated successfully: {}", updatedProduct.getName());
+                    logger.info("Product V2 - Product updated successfully: {}", updatedProduct.getName());
                     return ResponseEntity.ok(productMapper.toDTO(updatedProduct));
                 })
                 .orElseGet(() -> {
-                    logger.warn("V2 - Product not found for update with id: {}", id);
+                    logger.warn("Product V2 - Product not found for update with id: {}", id);
                     return ResponseEntity.notFound().build();
                 });
     }
@@ -208,16 +208,16 @@ public class ProductControllerV2 {
     })
     public ResponseEntity<Void> deleteProduct(
             @Parameter(description = "ID do produto") @PathVariable Long id) {
-        logger.info("V2 - Deleting product with id: {}", id);
+        logger.info("Product V2 - Deleting product with id: {}", id);
 
         return productService.findById(id)
                 .map(product -> {
                     productService.deleteById(id);
-                    logger.info("V2 - Product deleted successfully: {}", product.getName());
+                    logger.info("Product V2 - Product deleted successfully: {}", product.getName());
                     return ResponseEntity.noContent().<Void>build();
                 })
                 .orElseGet(() -> {
-                    logger.warn("V2 - Product not found for deletion with id: {}", id);
+                    logger.warn("Product V2 - Product not found for deletion with id: {}", id);
                     return ResponseEntity.notFound().build();
                 });
     }
