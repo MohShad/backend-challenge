@@ -4,6 +4,13 @@ import com.simplesdental.product.dto.CategoryResponseDTO;
 import com.simplesdental.product.mapper.CategoryMapper;
 import com.simplesdental.product.model.Category;
 import com.simplesdental.product.service.CategoryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/categories")
+@Tag(name = "Categories", description = "API para gerenciamento de categorias de produtos")
 public class CategoryController {
 
     private static final Logger logger = LoggerFactory.getLogger(CategoryController.class);
@@ -32,11 +40,19 @@ public class CategoryController {
     }
 
     @GetMapping
+    @Operation(summary = "Busca todas as categorias",
+            description = "Retorna uma lista paginada de todas as categorias com seus produtos associados")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Lista de categorias retornada com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Page.class)))
+    })
     public Page<CategoryResponseDTO> getAllCategories(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
+            @Parameter(description = "Número da página (começando em 0)", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Quantidade de itens por página", example = "20") @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Campo para ordenação", example = "id") @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Direção da ordenação (asc ou desc)", example = "asc") @RequestParam(defaultValue = "asc") String sortDir) {
 
         logger.info("Fetching categories - page: {}, size: {}, sortBy: {}, sortDir: {}", page, size, sortBy, sortDir);
 
@@ -53,7 +69,19 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryResponseDTO> getCategoryById(@PathVariable Long id) {
+    @Operation(summary = "Busca categoria por ID",
+            description = "Retorna uma categoria específica com todos os produtos associados")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Categoria encontrada",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CategoryResponseDTO.class))),
+            @ApiResponse(responseCode = "404",
+                    description = "Categoria não encontrada")
+    })
+    public ResponseEntity<CategoryResponseDTO> getCategoryById(
+            @Parameter(description = "ID da categoria", required = true, example = "1")
+            @PathVariable Long id) {
         logger.info("Fetching category by id: {}", id);
 
         return categoryService.findByIdWithProducts(id)
@@ -69,7 +97,19 @@ public class CategoryController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Category createCategory(@Valid @RequestBody Category category) {
+    @Operation(summary = "Cria uma nova categoria",
+            description = "Cria uma nova categoria de produto")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Categoria criada com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Category.class))),
+            @ApiResponse(responseCode = "400",
+                    description = "Dados inválidos fornecidos")
+    })
+    public Category createCategory(
+            @Parameter(description = "Dados da categoria a ser criada", required = true)
+            @Valid @RequestBody Category category) {
         logger.info("Creating new category: {}", category.getName());
 
         try {
@@ -83,7 +123,23 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Category> updateCategory(@PathVariable Long id, @Valid @RequestBody Category category) {
+    @Operation(summary = "Atualiza uma categoria",
+            description = "Atualiza todos os dados de uma categoria existente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Categoria atualizada com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Category.class))),
+            @ApiResponse(responseCode = "404",
+                    description = "Categoria não encontrada"),
+            @ApiResponse(responseCode = "400",
+                    description = "Dados inválidos fornecidos")
+    })
+    public ResponseEntity<Category> updateCategory(
+            @Parameter(description = "ID da categoria", required = true, example = "1")
+            @PathVariable Long id,
+            @Parameter(description = "Novos dados da categoria", required = true)
+            @Valid @RequestBody Category category) {
         logger.info("Updating category with id: {}", id);
 
         return categoryService.findById(id)
@@ -100,7 +156,17 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+    @Operation(summary = "Deleta uma categoria",
+            description = "Remove uma categoria do sistema")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204",
+                    description = "Categoria deletada com sucesso"),
+            @ApiResponse(responseCode = "404",
+                    description = "Categoria não encontrada")
+    })
+    public ResponseEntity<Void> deleteCategory(
+            @Parameter(description = "ID da categoria", required = true, example = "1")
+            @PathVariable Long id) {
         logger.info("Deleting category with id: {}", id);
 
         return categoryService.findById(id)
