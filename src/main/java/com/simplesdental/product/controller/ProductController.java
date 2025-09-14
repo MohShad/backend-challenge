@@ -1,5 +1,6 @@
 package com.simplesdental.product.controller;
 
+import com.simplesdental.product.dto.ErrorResponse;
 import com.simplesdental.product.dto.ProductCreateRequest;
 import com.simplesdental.product.dto.ProductResponseDTO;
 import com.simplesdental.product.mapper.ProductMapper;
@@ -85,7 +86,8 @@ public class ProductController {
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "Produto não encontrado"
+                    description = "Produto não encontrado",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
     public ResponseEntity<ProductResponseDTO> getProductById(
@@ -117,7 +119,8 @@ public class ProductController {
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Dados de entrada inválidos"
+                    description = "Dados de entrada inválidos",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
     public ProductResponseDTO createProduct(@Valid @RequestBody ProductCreateRequest request) {
@@ -154,11 +157,13 @@ public class ProductController {
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "Produto não encontrado"
+                    description = "Produto não encontrado",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Dados de entrada inválidos"
+                    description = "Dados de entrada inválidos",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
     public ResponseEntity<ProductResponseDTO> updateProduct(
@@ -197,7 +202,8 @@ public class ProductController {
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "Produto não encontrado"
+                    description = "Produto não encontrado",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
     public ResponseEntity<Void> deleteProduct(

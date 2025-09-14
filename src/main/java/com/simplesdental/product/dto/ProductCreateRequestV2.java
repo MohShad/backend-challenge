@@ -1,31 +1,39 @@
 package com.simplesdental.product.dto;
 
 import com.simplesdental.product.model.Category;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 
+@Schema(description = "Request para criar produto V2 com código inteiro")
 public class ProductCreateRequestV2 {
 
     @NotBlank
     @Size(max = 100)
+    @Schema(description = "Nome do produto", example = "iPhone 15 Pro")
     private String name;
 
     @Size(max = 255)
+    @Schema(description = "Descrição detalhada do produto", example = "iPhone 15 Pro com chip A17 Pro, câmera de 48MP e 256GB de armazenamento")
     private String description;
 
     @NotNull
     @Positive
+    @Schema(description = "Preço do produto em reais", example = "7999.00")
     private BigDecimal price;
 
     @NotNull
+    @Schema(description = "Status ativo/inativo do produto", example = "true")
     private Boolean status;
 
     @NotNull
     @Min(value = 1)
+    @Schema(description = "Código do produto (inteiro)", example = "150")
     private Integer code;
 
     @NotNull
+    @Schema(description = "Categoria do produto", implementation = Category.class)
     private Category category;
 
     public ProductCreateRequestV2() {}

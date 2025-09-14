@@ -1,6 +1,7 @@
 package com.simplesdental.product.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,17 +15,21 @@ import java.util.List;
 
 @Entity
 @Table(name = "categories")
+@Schema(description = "Categoria de produtos")
 public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "ID único da categoria", example = "1")
     private Long id;
 
     @NotBlank
     @Size(max = 100)
+    @Schema(description = "Nome da categoria", example = "Eletrônicos")
     private String name;
 
     @Size(max = 255)
+    @Schema(description = "Descrição da categoria", example = "Produtos eletrônicos e tecnológicos")
     private String description;
 
     @OneToMany(mappedBy = "category")
