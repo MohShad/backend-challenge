@@ -43,7 +43,7 @@ public class ProductControllerTest {
         product.setDescription("Test Description");
         product.setPrice(new BigDecimal("19.99"));
         product.setStatus(true);
-        product.setCode("TP001");
+        product.setCode(123);
     }
 
     @Test

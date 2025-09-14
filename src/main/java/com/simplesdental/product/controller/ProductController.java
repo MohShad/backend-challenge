@@ -1,5 +1,6 @@
 package com.simplesdental.product.controller;
 
+import com.simplesdental.product.dto.ProductCreateRequest;
 import com.simplesdental.product.dto.ProductResponseDTO;
 import com.simplesdental.product.mapper.ProductMapper;
 import com.simplesdental.product.model.Product;
@@ -69,29 +70,43 @@ public class ProductController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Product createProduct(@Valid @RequestBody Product product) {
-        logger.info("Creating new product: {}", product.getName());
+    public ProductResponseDTO createProduct(@Valid @RequestBody ProductCreateRequest request) {
+        logger.info("Creating new product: {}", request.getName());
 
         try {
+            Product product = new Product();
+            product.setName(request.getName());
+            product.setDescription(request.getDescription());
+            product.setPrice(request.getPrice());
+            product.setStatus(request.getStatus());
+            product.setCode(parseCodeFromV1(request.getCode()));
+            product.setCategory(request.getCategory());
+
             Product savedProduct = productService.save(product);
             logger.info("Product created successfully with id: {}", savedProduct.getId());
-            return savedProduct;
+            return productMapper.toDTO(savedProduct);
         } catch (Exception e) {
-            logger.error("Error creating product: {}", product.getName(), e);
+            logger.error("Error creating product: {}", request.getName(), e);
             throw e;
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @Valid @RequestBody Product product) {
+    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductCreateRequest request) {
         logger.info("Updating product with id: {}", id);
 
         return productService.findById(id)
                 .map(existingProduct -> {
-                    product.setId(id);
-                    Product updatedProduct = productService.save(product);
+                    existingProduct.setName(request.getName());
+                    existingProduct.setDescription(request.getDescription());
+                    existingProduct.setPrice(request.getPrice());
+                    existingProduct.setStatus(request.getStatus());
+                    existingProduct.setCode(parseCodeFromV1(request.getCode()));
+                    existingProduct.setCategory(request.getCategory());
+
+                    Product updatedProduct = productService.save(existingProduct);
                     logger.info("Product updated successfully: {}", updatedProduct.getName());
-                    return ResponseEntity.ok(updatedProduct);
+                    return ResponseEntity.ok(productMapper.toDTO(updatedProduct));
                 })
                 .orElseGet(() -> {
                     logger.warn("Product not found for update with id: {}", id);
@@ -113,5 +128,21 @@ public class ProductController {
                     logger.warn("Product not found for deletion with id: {}", id);
                     return ResponseEntity.notFound().build();
                 });
+    }
+
+    private Integer parseCodeFromV1(String code) {
+        if (code == null || code.trim().isEmpty()) {
+            return null;
+        }
+
+        if (code.startsWith("PROD-")) {
+            try {
+                return Integer.parseInt(code.substring(5));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid code format: " + code);
+            }
+        }
+
+        throw new IllegalArgumentException("Code must start with 'PROD-': " + code);
     }
 }

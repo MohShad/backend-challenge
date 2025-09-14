@@ -18,9 +18,16 @@ public class ProductMapper {
                 product.getDescription(),
                 product.getPrice(),
                 product.getStatus(),
-                product.getCode(),
+                formatCodeForV1(product.getCode()),
                 product.getCategory() != null ? product.getCategory().getId() : null,
                 product.getCategory() != null ? product.getCategory().getName() : null
         );
+    }
+
+    private String formatCodeForV1(Integer code) {
+        if (code == null) {
+            return null;
+        }
+        return String.format("PROD-%03d", code);
     }
 }
