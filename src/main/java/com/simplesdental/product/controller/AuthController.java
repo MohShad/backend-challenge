@@ -2,6 +2,7 @@ package com.simplesdental.product.controller;
 
 import com.simplesdental.product.dto.*;
 import com.simplesdental.product.model.User;
+import com.simplesdental.product.service.UserContextCacheService;
 import com.simplesdental.product.service.UserService;
 import com.simplesdental.product.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,21 +30,28 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
-@Tag(name = "Authentication", description = "API de autenticação")
+@Tag(name = "Authentication", description = "API para autenticação e gerenciamento de sessão")
 public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     private final UserService userService;
     private final JwtUtil jwtUtil;
+    private final UserContextCacheService userContextCacheService;
 
     @Value("${jwt.expiration:86400000}")
     private Long jwtExpiration;
 
     @Autowired
-    public AuthController(UserService userService, JwtUtil jwtUtil) {
+    public AuthController(UserService userService, JwtUtil jwtUtil, UserContextCacheService userContextCacheService) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
+        this.userContextCacheService = userContextCacheService;
+    }
+
+    public Long getUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (Long) authentication.getDetails();
     }
 
     @PostMapping("/login")
@@ -168,23 +176,10 @@ public class AuthController {
     })
     public ResponseEntity<UserContextDTO> getContext() {
         try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String email = authentication.getName();
-            Long userId = (Long) authentication.getDetails();
-
-            logger.info("Getting context for user: {} (ID: {})", email, userId);
-
-            Optional<User> userOptional = userService.findById(userId);
-
-            if (userOptional.isEmpty()) {
-                logger.warn("User not found in database: ID {}", userId);
-                throw new IllegalArgumentException("Usuário não encontrado");
-            }
-
-            User user = userOptional.get();
-            UserContextDTO response = new UserContextDTO(user.getId(), user.getEmail(), user.getRole());
-
-            logger.debug("Context returned successfully for user: {}", email);
+            Long userId = getUserId();
+            logger.info("=== AUTH/CONTEXT CALLED - Using UserContextCacheService ===");
+            UserContextDTO response = userContextCacheService.getCachedUserContext(userId);
+            logger.info("=== AUTH/CONTEXT FINISHED ===");
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {

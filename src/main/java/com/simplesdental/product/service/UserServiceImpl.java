@@ -5,11 +5,12 @@ import com.simplesdental.product.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,7 +32,7 @@ public class UserServiceImpl implements UserService {
     public void initializeAdminPassword() {
         try {
             String adminEmail = "contato@simplesdental.com";
-            String adminPassword = "KMbT%5wT*R!46i@@YHqx";
+            String adminPassword = "admin123";
 
             Optional<User> adminUser = findByEmail(adminEmail);
             if (adminUser.isPresent()) {
@@ -59,6 +60,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "userContext", key = "#user.id")
     public User save(User user) {
         return userRepository.save(user);
     }
@@ -79,6 +81,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "userContext", key = "#userId")
     public void updatePassword(Long userId, String newPassword) {
         User user = findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
@@ -108,6 +111,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "userContext", key = "#id")
     public void deleteById(Long id) {
         userRepository.deleteById(id);
     }
