@@ -2,6 +2,7 @@ package com.simplesdental.product.service;
 
 import com.simplesdental.product.model.User;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
@@ -21,5 +22,9 @@ public interface UserService {
     String encodePassword(String rawPassword);
 
     boolean isPasswordValid(String rawPassword, String encodedPassword);
+
+    List<User> findAll();
+
+    void deleteById(Long id);
 
 }

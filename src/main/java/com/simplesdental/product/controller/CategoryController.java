@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -98,7 +99,8 @@ public class CategoryController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Cria uma nova categoria",
-            description = "Cria uma nova categoria de produto")
+            description = "Cria uma nova categoria de produto. Apenas administradores podem criar categorias.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Categoria criada com sucesso",
@@ -124,7 +126,8 @@ public class CategoryController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualiza uma categoria",
-            description = "Atualiza todos os dados de uma categoria existente")
+            description = "Atualiza todos os dados de uma categoria existente. Apenas administradores podem atualizar categorias.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Categoria atualizada com sucesso",
@@ -157,7 +160,8 @@ public class CategoryController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Deleta uma categoria",
-            description = "Remove uma categoria do sistema")
+            description = "Remove uma categoria do sistema. Apenas administradores podem deletar categorias.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204",
                     description = "Categoria deletada com sucesso"),

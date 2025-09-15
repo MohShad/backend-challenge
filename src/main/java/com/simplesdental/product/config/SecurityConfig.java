@@ -29,22 +29,40 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(authz -> authz
-                // Public endpoints
-                .requestMatchers("/auth/login").permitAll()
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                // Protected endpoints - require authentication
-                .requestMatchers("/auth/context").authenticated()
-                .requestMatchers("/users/**").authenticated()
-                // Admin-only endpoints
-                .requestMatchers("/auth/register").hasRole("ADMIN")
-                // All other endpoints require authentication
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authz -> authz
+                        // Public endpoints
+                        .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+
+                        // Authentication endpoints
+                        .requestMatchers("/auth/context").authenticated()
+                        .requestMatchers("/auth/register").hasRole("ADMIN")
+
+                        // User management endpoints - admin only
+                        .requestMatchers("/auth/users/**").hasRole("ADMIN")
+
+                        // User endpoints - users can only update their own password
+                        .requestMatchers("/users/password").authenticated()
+
+                        // Products endpoints - GET for all authenticated, CUD for admin only
+                        .requestMatchers("GET", "/api/products/**", "/api/v2/products/**").authenticated()
+                        .requestMatchers("POST", "/api/products/**", "/api/v2/products/**").hasRole("ADMIN")
+                        .requestMatchers("PUT", "/api/products/**", "/api/v2/products/**").hasRole("ADMIN")
+                        .requestMatchers("DELETE", "/api/products/**", "/api/v2/products/**").hasRole("ADMIN")
+
+                        // Categories endpoints - GET for all authenticated, CUD for admin only
+                        .requestMatchers("GET", "/api/categories/**").authenticated()
+                        .requestMatchers("POST", "/api/categories/**").hasRole("ADMIN")
+                        .requestMatchers("PUT", "/api/categories/**").hasRole("ADMIN")
+                        .requestMatchers("DELETE", "/api/categories/**").hasRole("ADMIN")
+
+                        // All other endpoints require authentication
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

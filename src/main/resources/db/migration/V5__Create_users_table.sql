@@ -14,4 +14,4 @@ CREATE INDEX idx_users_role ON users(role);
 -- Usuário admin inicial
 -- Hash da senha 'KMbT%5wT*R!46i@@YHqx', usando BCrypt
 INSERT INTO users (name, email, password, role) VALUES
-('Admin User', 'contato@simplesdental.com', '$2a$12$YQiQxpyI3Qy0nuqoYl8XAeK1fKkL6H8Y2tGc4vZsJ1KQl2PQ4vZ2K', 'admin');
+('Admin User', 'contato@simplesdental.com', '$2a$12$.5DLUEaC/df00pZ7tIO1vuZgDeOQvaklcbC42QPl5b5Tqy9iVUsKK', 'admin');

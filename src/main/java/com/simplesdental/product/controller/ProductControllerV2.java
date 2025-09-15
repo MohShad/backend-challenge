@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -109,7 +110,8 @@ public class ProductControllerV2 {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
             summary = "Criar novo produto V2",
-            description = "Cria um novo produto com código inteiro"
+            description = "Cria um novo produto com código inteiro. Apenas administradores podem criar produtos.",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -147,7 +149,8 @@ public class ProductControllerV2 {
     @PutMapping("/{id}")
     @Operation(
             summary = "Atualizar produto V2",
-            description = "Atualiza um produto existente com código inteiro"
+            description = "Atualiza um produto existente com código inteiro. Apenas administradores podem atualizar produtos.",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -193,7 +196,8 @@ public class ProductControllerV2 {
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Excluir produto V2",
-            description = "Remove um produto do sistema"
+            description = "Remove um produto do sistema. Apenas administradores podem excluir produtos.",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(
