@@ -1,5 +1,6 @@
 target/
 postgres-data/
+redis-data/
 logs/
 pom.xml.tag
 pom.xml.releaseBackup
