@@ -3,6 +3,7 @@ package com.simplesdental.product.controller;
 import com.simplesdental.product.dto.ErrorResponse;
 import com.simplesdental.product.dto.ProductCreateRequestV2;
 import com.simplesdental.product.dto.ProductResponseDTOV2;
+import com.simplesdental.product.dto.SuccessResponseDTO;
 import com.simplesdental.product.mapper.ProductMapperV2;
 import com.simplesdental.product.model.Product;
 import com.simplesdental.product.service.ProductService;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,19 +93,20 @@ public class ProductControllerV2 {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
-    public ResponseEntity<ProductResponseDTOV2> getProductById(
+    public ResponseEntity<?> getProductById(
             @Parameter(description = "ID do produto") @PathVariable Long id) {
         logger.info("Product V2 - Fetching product by id: {}", id);
 
-        return productService.findByIdWithCategory(id)
-                .map(product -> {
-                    logger.info("Product V2 - Product found: {}", product.getName());
-                    return ResponseEntity.ok(productMapper.toDTO(product));
-                })
-                .orElseGet(() -> {
-                    logger.warn("Product V2 - Product not found with id: {}", id);
-                    return ResponseEntity.notFound().build();
-                });
+        Optional<Product> productOpt = productService.findByIdWithCategory(id);
+        if (productOpt.isPresent()) {
+            Product product = productOpt.get();
+            logger.info("Product V2 - Product found: {}", product.getName());
+            return ResponseEntity.ok(productMapper.toDTO(product));
+        } else {
+            logger.warn("Product V2 - Product not found with id: {}", id);
+            ErrorResponse error = new ErrorResponse(404, "Not Found", "Produto não encontrado", "/api/v2/products/" + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
     }
 
     @PostMapping
@@ -169,28 +172,29 @@ public class ProductControllerV2 {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
-    public ResponseEntity<ProductResponseDTOV2> updateProduct(
+    public ResponseEntity<?> updateProduct(
             @Parameter(description = "ID do produto") @PathVariable Long id,
             @Valid @RequestBody ProductCreateRequestV2 request) {
         logger.info("Product V2 - Updating product with id: {}", id);
 
-        return productService.findById(id)
-                .map(existingProduct -> {
-                    existingProduct.setName(request.getName());
-                    existingProduct.setDescription(request.getDescription());
-                    existingProduct.setPrice(request.getPrice());
-                    existingProduct.setStatus(request.getStatus());
-                    existingProduct.setCode(request.getCode());
-                    existingProduct.setCategory(request.getCategory());
+        Optional<Product> productOpt = productService.findById(id);
+        if (productOpt.isPresent()) {
+            Product existingProduct = productOpt.get();
+            existingProduct.setName(request.getName());
+            existingProduct.setDescription(request.getDescription());
+            existingProduct.setPrice(request.getPrice());
+            existingProduct.setStatus(request.getStatus());
+            existingProduct.setCode(request.getCode());
+            existingProduct.setCategory(request.getCategory());
 
-                    Product updatedProduct = productService.save(existingProduct);
-                    logger.info("Product V2 - Product updated successfully: {}", updatedProduct.getName());
-                    return ResponseEntity.ok(productMapper.toDTO(updatedProduct));
-                })
-                .orElseGet(() -> {
-                    logger.warn("Product V2 - Product not found for update with id: {}", id);
-                    return ResponseEntity.notFound().build();
-                });
+            Product updatedProduct = productService.save(existingProduct);
+            logger.info("Product V2 - Product updated successfully: {}", updatedProduct.getName());
+            return ResponseEntity.ok(productMapper.toDTO(updatedProduct));
+        } else {
+            logger.warn("Product V2 - Product not found for update with id: {}", id);
+            ErrorResponse error = new ErrorResponse(404, "Not Found", "Produto não encontrado", "/api/v2/products/" + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -201,8 +205,9 @@ public class ProductControllerV2 {
     )
     @ApiResponses(value = {
             @ApiResponse(
-                    responseCode = "204",
-                    description = "Produto excluído com sucesso"
+                    responseCode = "200",
+                    description = "Produto excluído com sucesso",
+                    content = @Content(schema = @Schema(implementation = SuccessResponseDTO.class))
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -210,19 +215,21 @@ public class ProductControllerV2 {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
-    public ResponseEntity<Void> deleteProduct(
+    public ResponseEntity<?> deleteProduct(
             @Parameter(description = "ID do produto") @PathVariable Long id) {
         logger.info("Product V2 - Deleting product with id: {}", id);
 
-        return productService.findById(id)
-                .map(product -> {
-                    productService.deleteById(id);
-                    logger.info("Product V2 - Product deleted successfully: {}", product.getName());
-                    return ResponseEntity.noContent().<Void>build();
-                })
-                .orElseGet(() -> {
-                    logger.warn("Product V2 - Product not found for deletion with id: {}", id);
-                    return ResponseEntity.notFound().build();
-                });
+        Optional<Product> productOpt = productService.findById(id);
+        if (productOpt.isPresent()) {
+            Product product = productOpt.get();
+            productService.deleteById(id);
+            logger.info("Product V2 - Product deleted successfully: {}", product.getName());
+            SuccessResponseDTO response = new SuccessResponseDTO("Produto excluído com sucesso");
+            return ResponseEntity.ok(response);
+        } else {
+            logger.warn("Product V2 - Product not found for deletion with id: {}", id);
+            ErrorResponse error = new ErrorResponse(404, "Not Found", "Produto não encontrado", "/api/v2/products/" + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
     }
 }

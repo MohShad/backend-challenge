@@ -177,9 +177,9 @@ public class AuthController {
     public ResponseEntity<UserContextDTO> getContext() {
         try {
             Long userId = getUserId();
-            logger.info("=== AUTH/CONTEXT CALLED - Using UserContextCacheService ===");
+            logger.info("AUTH/CONTEXT CALLED - Using UserContextCacheService");
             UserContextDTO response = userContextCacheService.getCachedUserContext(userId);
-            logger.info("=== AUTH/CONTEXT FINISHED ===");
+            logger.info("AUTH/CONTEXT FINISHED");
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
@@ -187,6 +187,7 @@ public class AuthController {
             throw new RuntimeException("Erro ao obter contexto do usuário");
         }
     }
+
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
@@ -270,8 +271,10 @@ public class AuthController {
             description = "Remove um usuário do sistema. Apenas administradores podem deletar usuários.",
             security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204",
-                    description = "Usuário deletado com sucesso"),
+            @ApiResponse(responseCode = "200",
+                    description = "Usuário deletado com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = SuccessResponseDTO.class))),
             @ApiResponse(responseCode = "404",
                     description = "Usuário não encontrado"),
             @ApiResponse(responseCode = "400",
@@ -281,7 +284,7 @@ public class AuthController {
             @ApiResponse(responseCode = "401",
                     description = "Token inválido ou expirado")
     })
-    public ResponseEntity<Void> deleteUser(
+    public ResponseEntity<SuccessResponseDTO> deleteUser(
             @Parameter(description = "ID do usuário", required = true, example = "2")
             @PathVariable Long id) {
 
@@ -308,7 +311,8 @@ public class AuthController {
             userService.deleteById(id);
 
             logger.info("User deleted successfully: {} (ID: {})", user.getEmail(), id);
-            return ResponseEntity.noContent().build();
+            SuccessResponseDTO response = new SuccessResponseDTO("Usuário deletado com sucesso");
+            return ResponseEntity.ok(response);
 
         } catch (IllegalArgumentException e) {
             logger.error("Delete user failed - {}", e.getMessage());

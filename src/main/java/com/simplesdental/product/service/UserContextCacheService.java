@@ -30,7 +30,7 @@ public class UserContextCacheService {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
 
-            logger.info("=== CACHE MISS - EXECUTING SQL for user: {} (ID: {}) ===", email, userId);
+            logger.info("CACHE MISS - EXECUTING SQL for user: {} (ID: {})", email, userId);
 
             Optional<User> userOptional = userService.findById(userId);
 

@@ -20,7 +20,7 @@ public class OpenApiConfig {
                 .description("Development Server");
 
         Contact contact = new Contact()
-                .name("Simples Dental API Team")
+                .name("Simples Dental API")
                 .email("api@simplesdental.com")
                 .url("https://simplesdental.com");
 

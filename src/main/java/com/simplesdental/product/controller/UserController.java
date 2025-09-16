@@ -1,6 +1,7 @@
 package com.simplesdental.product.controller;
 
 import com.simplesdental.product.dto.ErrorResponse;
+import com.simplesdental.product.dto.SuccessResponseDTO;
 import com.simplesdental.product.dto.UpdatePasswordRequestDTO;
 import com.simplesdental.product.model.User;
 import com.simplesdental.product.service.UserService;
@@ -39,25 +40,27 @@ public class UserController {
 
     @PutMapping("/password")
     @Operation(summary = "Atualiza senha do usuário autenticado",
-               description = "Permite ao usuário autenticado alterar sua senha atual fornecendo a senha atual e a nova senha",
-               security = @SecurityRequirement(name = "bearerAuth"))
+            description = "Permite ao usuário autenticado alterar sua senha atual fornecendo a senha atual e a nova senha",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200",
-                    description = "Senha atualizada com sucesso"),
-        @ApiResponse(responseCode = "400",
+            @ApiResponse(responseCode = "200",
+                    description = "Senha atualizada com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = SuccessResponseDTO.class))),
+            @ApiResponse(responseCode = "400",
                     description = "Dados inválidos ou senha atual incorreta",
                     content = @Content(mediaType = "application/json",
-                                     schema = @Schema(implementation = ErrorResponse.class))),
-        @ApiResponse(responseCode = "401",
+                            schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "401",
                     description = "Token inválido ou expirado",
                     content = @Content(mediaType = "application/json",
-                                     schema = @Schema(implementation = ErrorResponse.class))),
-        @ApiResponse(responseCode = "404",
+                            schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404",
                     description = "Usuário não encontrado",
                     content = @Content(mediaType = "application/json",
-                                     schema = @Schema(implementation = ErrorResponse.class)))
+                            schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Void> updatePassword(
+    public ResponseEntity<SuccessResponseDTO> updatePassword(
             @Parameter(description = "Dados para atualização de senha", required = true)
             @Valid @RequestBody UpdatePasswordRequestDTO updatePasswordRequest) {
 
@@ -77,20 +80,24 @@ public class UserController {
 
             User user = userOptional.get();
 
+            // Verificar se a senha atual está correta
             if (!userService.isPasswordValid(updatePasswordRequest.getCurrentPassword(), user.getPassword())) {
                 logger.warn("Invalid current password for user: {} (ID: {})", email, userId);
                 throw new IllegalArgumentException("Senha atual incorreta");
             }
 
+            // Verificar se a nova senha é diferente da atual
             if (userService.isPasswordValid(updatePasswordRequest.getNewPassword(), user.getPassword())) {
                 logger.warn("New password is same as current password for user: {} (ID: {})", email, userId);
                 throw new IllegalArgumentException("A nova senha deve ser diferente da senha atual");
             }
 
+            // Atualizar a senha
             userService.updatePassword(userId, updatePasswordRequest.getNewPassword());
 
             logger.info("Password updated successfully for user: {} (ID: {})", email, userId);
-            return ResponseEntity.ok().build();
+            SuccessResponseDTO response = new SuccessResponseDTO("Senha atualizada com sucesso");
+            return ResponseEntity.ok(response);
 
         } catch (IllegalArgumentException e) {
             logger.error("Password update failed - {}", e.getMessage());

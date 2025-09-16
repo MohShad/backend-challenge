@@ -3,6 +3,7 @@ package com.simplesdental.product.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simplesdental.product.dto.LoginRequestDTO;
 import com.simplesdental.product.model.User;
+import com.simplesdental.product.service.UserContextCacheService;
 import com.simplesdental.product.service.UserService;
 import com.simplesdental.product.util.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +34,9 @@ public class AuthControllerTest {
 
     @MockBean
     private JwtUtil jwtUtil;
+
+    @MockBean
+    private UserContextCacheService userContextCacheService;
 
     @Autowired
     private ObjectMapper objectMapper;

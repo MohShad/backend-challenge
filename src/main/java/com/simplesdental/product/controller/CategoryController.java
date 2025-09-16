@@ -1,6 +1,8 @@
 package com.simplesdental.product.controller;
 
 import com.simplesdental.product.dto.CategoryResponseDTO;
+import com.simplesdental.product.dto.ErrorResponse;
+import com.simplesdental.product.dto.SuccessResponseDTO;
 import com.simplesdental.product.mapper.CategoryMapper;
 import com.simplesdental.product.model.Category;
 import com.simplesdental.product.service.CategoryService;
@@ -13,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,20 +83,21 @@ public class CategoryController {
             @ApiResponse(responseCode = "404",
                     description = "Categoria não encontrada")
     })
-    public ResponseEntity<CategoryResponseDTO> getCategoryById(
+    public ResponseEntity<?> getCategoryById(
             @Parameter(description = "ID da categoria", required = true, example = "1")
             @PathVariable Long id) {
         logger.info("Fetching category by id: {}", id);
 
-        return categoryService.findByIdWithProducts(id)
-                .map(category -> {
-                    logger.info("Category found: {}", category.getName());
-                    return ResponseEntity.ok(categoryMapper.toDTO(category));
-                })
-                .orElseGet(() -> {
-                    logger.warn("Category not found with id: {}", id);
-                    return ResponseEntity.notFound().build();
-                });
+        Optional<Category> categoryOpt = categoryService.findByIdWithProducts(id);
+        if (categoryOpt.isPresent()) {
+            Category category = categoryOpt.get();
+            logger.info("Category found: {}", category.getName());
+            return ResponseEntity.ok(categoryMapper.toDTO(category));
+        } else {
+            logger.warn("Category not found with id: {}", id);
+            ErrorResponse error = new ErrorResponse(404, "Not Found", "Categoria não encontrada", "/api/categories/" + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
     }
 
     @PostMapping
@@ -138,24 +142,26 @@ public class CategoryController {
             @ApiResponse(responseCode = "400",
                     description = "Dados inválidos fornecidos")
     })
-    public ResponseEntity<Category> updateCategory(
+    public ResponseEntity<?> updateCategory(
             @Parameter(description = "ID da categoria", required = true, example = "1")
             @PathVariable Long id,
             @Parameter(description = "Novos dados da categoria", required = true)
             @Valid @RequestBody Category category) {
         logger.info("Updating category with id: {}", id);
 
-        return categoryService.findById(id)
-                .map(existingCategory -> {
-                    category.setId(id);
-                    Category updatedCategory = categoryService.save(category);
-                    logger.info("Category updated successfully: {}", updatedCategory.getName());
-                    return ResponseEntity.ok(updatedCategory);
-                })
-                .orElseGet(() -> {
-                    logger.warn("Category not found for update with id: {}", id);
-                    return ResponseEntity.notFound().build();
-                });
+        Optional<Category> categoryOpt = categoryService.findById(id);
+        if (categoryOpt.isPresent()) {
+            Category existingCategory = categoryOpt.get();
+            existingCategory.setName(category.getName());
+            existingCategory.setDescription(category.getDescription());
+            Category updatedCategory = categoryService.save(existingCategory);
+            logger.info("Category updated successfully: {}", updatedCategory.getName());
+            return ResponseEntity.ok(updatedCategory);
+        } else {
+            logger.warn("Category not found for update with id: {}", id);
+            ErrorResponse error = new ErrorResponse(404, "Not Found", "Categoria não encontrada", "/api/categories/" + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -168,20 +174,22 @@ public class CategoryController {
             @ApiResponse(responseCode = "404",
                     description = "Categoria não encontrada")
     })
-    public ResponseEntity<Void> deleteCategory(
+    public ResponseEntity<?> deleteCategory(
             @Parameter(description = "ID da categoria", required = true, example = "1")
             @PathVariable Long id) {
         logger.info("Deleting category with id: {}", id);
 
-        return categoryService.findById(id)
-                .map(category -> {
-                    categoryService.deleteById(id);
-                    logger.info("Category deleted successfully: {}", category.getName());
-                    return ResponseEntity.noContent().<Void>build();
-                })
-                .orElseGet(() -> {
-                    logger.warn("Category not found for deletion with id: {}", id);
-                    return ResponseEntity.notFound().build();
-                });
+        Optional<Category> categoryOpt = categoryService.findById(id);
+        if (categoryOpt.isPresent()) {
+            Category category = categoryOpt.get();
+            categoryService.deleteById(id);
+            logger.info("Category deleted successfully: {}", category.getName());
+            SuccessResponseDTO response = new SuccessResponseDTO("Categoria deletada com sucesso");
+            return ResponseEntity.ok(response);
+        } else {
+            logger.warn("Category not found for deletion with id: {}", id);
+            ErrorResponse error = new ErrorResponse(404, "Not Found", "Categoria não encontrada", "/api/categories/" + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
     }
 }

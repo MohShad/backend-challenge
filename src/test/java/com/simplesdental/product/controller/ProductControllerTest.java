@@ -214,7 +214,10 @@ public class ProductControllerTest {
 
         mockMvc.perform(delete("/api/products/1")
                         .with(csrf()))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Produto deletado com sucesso"))
+                .andExpect(jsonPath("$.timestamp").exists());
+
     }
 
     @Test

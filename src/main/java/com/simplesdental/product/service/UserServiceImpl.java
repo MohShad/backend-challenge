@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
     public void initializeAdminPassword() {
         try {
             String adminEmail = "contato@simplesdental.com";
-            String adminPassword = "admin123";
+            String adminPassword = "KMbT%5wT*R!46i@@YHqx";
 
             Optional<User> adminUser = findByEmail(adminEmail);
             if (adminUser.isPresent()) {
