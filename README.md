@@ -65,6 +65,12 @@ Você deve ajustar as entidades (model e sql) de acordo com as regras abaixo:
 
 ---
 
+## Simples Dental Products API
+- Swagger documentation
+  - http://localhost:8080/swagger-ui/index.html#/
+- OpenAPI document in JSON
+  - http://localhost:8080/v3/api-docs
+---
 # Perguntas
 
 1. **Se tivesse a oportunidade de criar o projeto do zero ou refatorar o projeto atual, qual arquitetura você utilizaria e por quê?**
